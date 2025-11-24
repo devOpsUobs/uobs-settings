@@ -1,0 +1,34 @@
+[14-Aug-2021 05:56:09 UTC] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/Shared/String.php on line 526
+[14-Aug-2021 05:56:09 UTC] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/Shared/String.php on line 527
+[14-Aug-2021 05:56:09 UTC] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/Shared/String.php on line 538
+[14-Aug-2021 05:56:09 UTC] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/Shared/String.php on line 539
+[14-Aug-2021 05:56:09 UTC] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/Shared/String.php on line 541
+[14-Aug-2021 05:56:09 UTC] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/Shared/String.php on line 542
+[14-Aug-2021 05:56:09 UTC] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/ReferenceHelper.php on line 884
+[14-Aug-2021 05:56:09 UTC] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/ReferenceHelper.php on line 884
+[14-Aug-2021 05:56:09 UTC] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/ReferenceHelper.php on line 885
+[14-Aug-2021 05:56:09 UTC] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/ReferenceHelper.php on line 885
+[14-Aug-2021 05:56:09 UTC] PHP Fatal error:  Uncaught Error: Class 'ZipArchive' not found in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/Reader/Excel2007.php:85
+Stack trace:
+#0 /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/IOFactory.php(269): PHPExcel_Reader_Excel2007->canRead('../studentResul...')
+#1 /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/IOFactory.php(191): PHPExcel_IOFactory::createReaderForFile('../studentResul...')
+#2 /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/myfiles/result/class_result/download/download_all/msExcelExport.php(11): PHPExcel_IOFactory::load('../studentResul...')
+#3 {main}
+  thrown in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/Reader/Excel2007.php on line 85
+[14-Aug-2021 05:56:12 UTC] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/Shared/String.php on line 526
+[14-Aug-2021 05:56:12 UTC] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/Shared/String.php on line 527
+[14-Aug-2021 05:56:12 UTC] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/Shared/String.php on line 538
+[14-Aug-2021 05:56:12 UTC] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/Shared/String.php on line 539
+[14-Aug-2021 05:56:12 UTC] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/Shared/String.php on line 541
+[14-Aug-2021 05:56:12 UTC] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/Shared/String.php on line 542
+[14-Aug-2021 05:56:12 UTC] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/ReferenceHelper.php on line 884
+[14-Aug-2021 05:56:12 UTC] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/ReferenceHelper.php on line 884
+[14-Aug-2021 05:56:12 UTC] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/ReferenceHelper.php on line 885
+[14-Aug-2021 05:56:12 UTC] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/ReferenceHelper.php on line 885
+[14-Aug-2021 05:56:12 UTC] PHP Fatal error:  Uncaught Error: Class 'ZipArchive' not found in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/Reader/Excel2007.php:85
+Stack trace:
+#0 /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/IOFactory.php(269): PHPExcel_Reader_Excel2007->canRead('../studentResul...')
+#1 /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/IOFactory.php(191): PHPExcel_IOFactory::createReaderForFile('../studentResul...')
+#2 /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/myfiles/result/class_result/download/download_all/msExcelExport.php(11): PHPExcel_IOFactory::load('../studentResul...')
+#3 {main}
+  thrown in /home/cw4vl9u2i7bh/public_html/bhss.gbpak.com/libraries/PHPExcel-1.8/Classes/PHPExcel/Reader/Excel2007.php on line 85
