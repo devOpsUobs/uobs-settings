@@ -7,526 +7,194 @@ require_once '../../../../libraries/PHPExcel-1.8/Classes/PHPExcel/IOFactory.php'
 include '../../../conn.php';
 include "../../../common.php";
 
-
 $eval_count = mysqli_query($conn, "SELECT es.* FROM `kiusc_eval_std` es
-									left join kiusc_course_offered co on co.id=es.c_offer_id
-									left join kiusc_programs p on p.id=co.prog_id
-									where  es.eval_id='$evl_id' and es.eval_type_id=1 and p.dep_id='$department'");
+    LEFT JOIN kiusc_course_offered co ON co.id = es.c_offer_id
+    LEFT JOIN kiusc_programs p ON p.id = co.prog_id
+    WHERE es.eval_id = '$evl_id' AND es.eval_type_id = 1 AND p.dep_id = '$department'");
 $evl_count = mysqli_num_rows($eval_count);
 
 if ($evl_count == 0) {
-
-	echo '<font color=red> No record found in the Evaluation Summary for this Department.</font>';
-	return;
-
+    echo '<font color=red> No record found in the Evaluation Summary for this Department.</font>';
+    return;
 }
 
 $objPHPExcel = PHPExcel_IOFactory::load("TeacherEvalReport.xlsx");
 
-
-
-$sem = mysqli_query($conn, "select s.* from kiusc_evaluation e JOIN kiusc_semesters s ON s.id = e.sem_id where e.id='$evl_id'");
+$sem = mysqli_query($conn, "SELECT s.* FROM kiusc_evaluation e 
+    JOIN kiusc_semesters s ON s.id = e.sem_id WHERE e.id = '$evl_id'");
 $sem = mysqli_fetch_assoc($sem);
-
 $semester = $sem['sem_name'];
 
+$faculty = mysqli_query($conn, "SELECT first_name, last_name, user_id FROM `kiusc_employees` 
+    WHERE acc_department_id = '$department' AND is_active = 1");
 
-
-//$faculty = mysqli_query($conn, 'SELECT id, name FROM `s04cf_users` WHERE block = 0');
-$faculty = mysqli_query($conn, "SELECT first_name,last_name,user_id FROM `kiusc_employees`  WHERE acc_department_id='$department' and is_active=1");
-
-
-
-$name_for_download = 'Evaluation Report -' . $semester;
+$name_for_download = 'Teacher Evaluation Report - ' . $semester;
 $i = 0;
 
-while ($fac = mysqli_fetch_assoc($faculty)) 
-{
-
-		$eval_count_fac = mysqli_query($conn, "SELECT es.* FROM `kiusc_eval_std` es
-												left join kiusc_course_offered co on co.id=es.c_offer_id
-												where  es.eval_id='$evl_id' and es.eval_type_id=1 and co.fac_id = '" . $fac['user_id'] . "' ");
-		$evl_count_fac = mysqli_num_rows($eval_count_fac);
-		if ($evl_count_fac == 0) {
-		continue;
-
-		}
-
-	$courses = mysqli_query($conn, "SELECT cf.* FROM `kiusc_course_offered` cf join kiusc_evaluation e on cf.sem_id = e.sem_id 
-									WHERE cf.fac_id = '" . $fac['user_id'] . "' and e.id = '$evl_id' and cf.eva_cat_id !=5");
-	$offer = mysqli_num_rows($courses);
-	if ($offer > 0) {
-
-		$i++;
-		//if($i != 0)
-		//{
-		$sheet1 = $objPHPExcel->getActiveSheet()->copy();
-		$sheet2 = clone $sheet1;
-		// add title
-		$fac_name = $fac['first_name'] . ' ' . $fac['last_name'];
-
-
-		if (strlen($fac_name) > 31) {
-			$fac_name = substr($fac_name, 0, 28) . '...';
-		}
-
-		$sheet2->setTitle($fac_name);
-
-		// end title code
-
-		$sheet2->setTitle($fac_name);
-		$objPHPExcel->addSheet($sheet2);
-		unset($sheet2);
-		unset($sheet1);
-
-		//}
-		//else
-		//{
-		//$objPHPExcel->getActiveSheet()->setTitle($fee_basic['std_name']);
-		//}
-		$objPHPExcel->setActiveSheetIndex($i);
-
-		$objPHPExcel->getActiveSheet()->setcellValue('C2', $fac['first_name'] . ' ' . $fac['last_name']);
-		$objPHPExcel->getActiveSheet()->setcellValue('C3', '');
-		$objPHPExcel->getActiveSheet()->setcellValue('A4', "The Quality Enhancement Cell, University of Baltistan, Skardu hereby acknowledges your services at University of Baltistan, Skardu. Your Evaluation report of the Semester (" . $semester . ") has been prepared under the students' Evaluation Data collected by this office. The following observations and recommendations are forwarded for kind perusal:");
-
-		$g_total = 0;
-		$g_obt = 0;
-		$total_per = 0;
-		// 2 = C
-		$row = 7;
-		$sno = 1;
-
-		$cat1 = 0;
-		$cat2 = 0;
-		$cat3 = 0;
-		$cat4 = 0;
-		$cat5 = 0;
-		$cat6 = 0;
-		$cat7 = 0;
-		$cat8 = 0;
-		$cat9 = 0;
-		$cat1_questions = 0;
-		$cat3_questions = 0;
-		$cat4_questions = 0;
-		$cat2_questions = 0;
-		$cat5_questions = 0;
-		$cat6_questions = 0;
-		$cat7_questions = 0;
-		$cat8_questions = 0;
-		$cat9_questions = 0;
-
-		$total_courses = 0;
-		$ttl_reg_std = 1;
-		$total_participated_std_percentage = 0;
-		$eva_std_percentage = 0;
-		while ($co = mysqli_fetch_assoc($courses)) {
-
-
-			$total_registered_std = mysqli_query($conn, "SELECT * FROM `kiusc_results` where c_offer_id = '" . $co['id'] . "'");
-			$ttl_reg_std = mysqli_num_rows($total_registered_std);
-			// if($ttl_reg_std=0)
-			// 	$ttl_reg_std=1;
-			if ($ttl_reg_std != 0) {
-
-				$total_eval_std = mysqli_query($conn, "SELECT distinct(es.std_id) FROM `kiusc_eval_std` es 
-											JOIN `kiusc_eval_questions` eq ON es.question_id=eq.id 
-											JOIN `kiusc_eval_ques_category` eqc on eqc.id=eq.cat_id 
-											WHERE c_offer_id = '" . $co['id'] . "'");
-
-				$ttl_eval_std = mysqli_num_rows($total_eval_std);
-				if ($ttl_eval_std > 0) {
-					$total_courses++;
-					$eva_std_percentage = (($ttl_eval_std / $ttl_reg_std) * 100);
-					$total_participated_std_percentage = $total_participated_std_percentage + round($eva_std_percentage, 2);
-				} else {
-					$eva_std_percentage = 0;
-				}
-				$objPHPExcel->getActiveSheet()->setcellValue('A' . $row, $sno);
-
-				$col = 1;
-
-				$course_name = mysqli_query($conn, "SELECT * FROM `kiusc_courses` c join kiusc_course_offered cf on c.id= cf.course_id WHERE cf.id = '" . $co['id'] . "' and cf.eva_cat_id !=5");
-				$c_name = mysqli_fetch_assoc($course_name);
-
-				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col, $row, $c_name['name']);
-
-				$prog_name = mysqli_query($conn, "SELECT * FROM `kiusc_programs` WHERE id = '" . $co['prog_id'] . "'");
-				$p_name = mysqli_fetch_assoc($prog_name);
-
-				$col++;
-				$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col, $row, $p_name['name'] . ' (' . $p_name['session_name'] . ')' . $p_name['group']);
-
-				$total = 0;
-				$obt = 0;
-
-				$answers = mysqli_query($conn, "SELECT * FROM `kiusc_eval_std` es 
-												JOIN `kiusc_eval_questions` eq ON es.question_id=eq.id
-												JOIN `kiusc_eval_ques_category` eqc on eqc.id=eq.cat_id 
-												WHERE eqc.eval_type_id=1  and  c_offer_id = '" . $co['id'] . "'");
-				$count = mysqli_num_rows($answers);
-				if ($count > 0) {
-					while ($ans = mysqli_fetch_assoc($answers)) {
-						// if ($evl_id < 15) {
-
-						// 	if ($ans['cat_id'] == 1) {
-						// 		$cat1_questions++;
-						// 		$cat1 = $cat1 + (int) decrypt($ans['ans']);
-						// 	} elseif ($ans['cat_id'] == 2) {
-						// 		$cat2_questions++;
-						// 		$cat2 = $cat2 + (int) decrypt($ans['ans']);
-						// 	} elseif ($ans['cat_id'] == 3) {
-						// 		$cat3_questions++;
-						// 		$cat3 = $cat3 + (int) decrypt($ans['ans']);
-						// 	} elseif ($ans['cat_id'] == 4) {
-						// 		$cat4_questions++;
-						// 		$cat4 = $cat4 + (int) decrypt($ans['ans']);
-						// 	} elseif ($ans['cat_id'] == 5) {
-						// 		$cat5_questions++;
-						// 		$cat5 = $cat5 + (int) decrypt($ans['ans']);
-
-						// 	} elseif ($ans['cat_id'] == 6) {
-						// 		$cat6_questions++;
-						// 		$cat6 = $cat6 + (int) decrypt($ans['ans']);
-
-						// 	} elseif ($ans['cat_id'] == 7) {
-						// 		$cat7_questions++;
-						// 		$cat7 = $cat7 + (int) decrypt($ans['ans']);
-
-						// 	} elseif ($ans['cat_id'] == 8) {
-						// 		$cat8_questions++;
-						// 		$cat8 = $cat8 + (int) decrypt($ans['ans']);
-
-						// 	} elseif ($ans['cat_id'] == 9) {
-						// 		$cat9_questions++;
-						// 		$cat9 = $cat9 + (int) decrypt($ans['ans']);
-
-
-						// 	}
-
-						// 	$total += 3;
-						// 	$obt += (int) decrypt($ans['ans']);
-						// } else {
-
-							if ($ans['cat_id'] == 1) {
-								$cat1_questions++;
-								$cat1 = $cat1 + $ans['ans'];
-							} elseif ($ans['cat_id'] == 2) {
-								$cat2_questions++;
-								$cat2 = $cat2 + $ans['ans'];
-							} elseif ($ans['cat_id'] == 3) {
-								$cat3_questions++;
-								$cat3 = $cat3 + $ans['ans'];
-							} elseif ($ans['cat_id'] == 4) {
-								$cat4_questions++;
-								$cat4 = $cat4 + $ans['ans'];
-							} elseif ($ans['cat_id'] == 5) {
-								$cat5_questions++;
-								$cat5 = $cat5 + $ans['ans'];
-
-							} elseif ($ans['cat_id'] == 6) {
-								$cat6_questions++;
-								$cat6 = $cat6 + $ans['ans'];
-
-							} elseif ($ans['cat_id'] == 7) {
-								$cat7_questions++;
-								$cat7 = $cat7 + $ans['ans'];
-
-							} elseif ($ans['cat_id'] == 8) {
-								$cat8_questions++;
-								$cat8 = $cat8 + $ans['ans'];
-
-							} elseif ($ans['cat_id'] == 9) {
-								$cat9_questions++;
-								$cat9 = $cat9 + $ans['ans'];
-
-
-							}
-
-							$total += 3;
-							$obt += $ans['ans'];
-						// }
-
-					}
-
-					$per = 0;
-					if ($total > 0)
-						$per = round($obt / $total * 100, 2);
-
-					if ($per < 50) {
-						$col++;
-						$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col, $row, $per);
-						$col2 = $col + 4;
-					} elseif ($per >= 50 && $per < 60) {
-						$col = $col + 2;
-						$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col, $row, $per);
-						$col2 = $col + 3;
-					} elseif ($per >= 60 && $per < 80) {
-						$col = $col + 3;
-						$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col, $row, $per);
-						$col2 = $col + 2;
-					} elseif ($per >= 80 && $per < 90) {
-						$col = $col + 4;
-						$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col, $row, $per);
-						$col2 = $col + 1;
-					} elseif ($per >= 90) {
-						$col = $col + 5;
-						$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col, $row, $per);
-						$col2 = $col;
-					}
-
-					$col2++;
-					$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col2, $row, $ttl_reg_std);
-					$col2++;
-					$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col2, $row, $ttl_eval_std);
-					$col2++;
-					$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col2, $row, round($eva_std_percentage, 2));
-
-					$g_total += $total;
-					$g_obt += $obt;
-
-
-					$total_per += $per;
-
-					$row++;
-					$sno++;
-				} else {
-					$col++;
-					$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col, $row, '^NE');
-					$col++;
-					$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col, $row, '^NE');
-					$col++;
-					$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col, $row, '^NE');
-					$col++;
-					$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col, $row, '^NE');
-					$col++;
-					$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col, $row, '^NE');
-					$col++;
-					$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col, $row, $ttl_reg_std);
-					$col++;
-					$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col, $row, $ttl_eval_std);
-					$col++;
-					$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col, $row, round($eva_std_percentage, 2));
-
-					$row++;
-					$sno++;
-				}
-			}
-		}
-		$comp_tech_prof = ($total_per / $total_courses);
-		$comp_tech_prof = round($comp_tech_prof, 2);
-
-		$std_participants_lvl = ($total_participated_std_percentage / $total_courses);
-		$std_participant_lvl = round($std_participants_lvl, 2);
-		// echo $cat1.'<br>'.($cat1_questions*3).'<br>';
-		// echo ($cat1/($cat1_questions*3))*100;
-		//return;
-		$feedback = "";
-
-		if ($cat1_questions == 0)
-			$cat1_questions = 1;
-		if ($cat2_questions == 0)
-			$cat2_questions = 1;
-		if ($cat3_questions == 0)
-			$cat3_questions = 1;
-		if ($cat4_questions == 0)
-			$cat4_questions = 1;
-		if ($cat5_questions == 0)
-			$cat5_questions = 1;
-		if ($cat6_questions == 0)
-			$cat6_questions = 1;
-		if ($cat7_questions == 0)
-			$cat7_questions = 1;
-		if ($cat8_questions == 0)
-			$cat8_questions = 1;
-		if ($cat9_questions == 0)
-			$cat9_questions = 1;
-
-
-
-		$cat1_quest = (($cat1 / ($cat1_questions * 3)) * 100);
-		$t = 1;
-		$eva_fb = mysqli_query($conn, "SELECT * FROM `kiusc_eval_feedback` where cat_id=1 and  min < '$cat1_quest' and max >= '$cat1_quest'");
-		$evafb = mysqli_fetch_assoc($eva_fb);
-		if ($cat1_quest > 0) {
-			$feedback = $t . ') ' . $evafb['feedback'];
-			$t++;
-		}
-
-		$cat2_quest = (($cat2 / ($cat2_questions * 3)) * 100);
-
-		$eva_fb = mysqli_query($conn, "SELECT * FROM `kiusc_eval_feedback` where cat_id=2 and min <= '$cat2_quest' and max >= '$cat2_quest'");
-		$evafb = mysqli_fetch_assoc($eva_fb);
-		if ($cat2_quest > 0) {
-			$feedback = $feedback . "\n" . $t . ") " . $evafb['feedback'];
-			$t++;
-		}
-
-		$cat3_quest = (($cat3 / ($cat3_questions * 3)) * 100);
-		$eva_fb = mysqli_query($conn, "SELECT * FROM `kiusc_eval_feedback` where cat_id=3 and min < '$cat3_quest' and max >= '$cat3_quest'");
-		$evafb = mysqli_fetch_assoc($eva_fb);
-		if ($cat3_quest > 0) {
-			$feedback = $feedback . "\n" . $t . ') ' . $evafb['feedback'];
-			$t++;
-		}
-
-		$cat4_quest = (($cat4 / ($cat4_questions * 3)) * 100);
-		$eva_fb = mysqli_query($conn, "SELECT * FROM `kiusc_eval_feedback` where cat_id=4 and min < '$cat4_quest' and max >= '$cat4_quest'");
-		$evafb = mysqli_fetch_assoc($eva_fb);
-		if ($cat4_quest > 0) {
-			$feedback = $feedback . "\n" . $t . ') ' . $evafb['feedback'];
-			$t++;
-		}
-
-		$cat5_quest = (($cat5 / ($cat5_questions * 3)) * 100);
-		$eva_fb = mysqli_query($conn, "SELECT * FROM `kiusc_eval_feedback` where cat_id=5 and min < '$cat5_quest' and max >= '$cat5_quest'");
-		$evafb = mysqli_fetch_assoc($eva_fb);
-		if ($cat5_quest > 0) {
-			$feedback = $feedback . "\n" . $t . ') ' . $evafb['feedback'];
-			$t++;
-		}
-
-		$cat6_quest = (($cat6 / ($cat6_questions * 3)) * 100);
-		$eva_fb = mysqli_query($conn, "SELECT * FROM `kiusc_eval_feedback` where cat_id=6 and min < '$cat6_quest' and max >= '$cat6_quest'");
-		$evafb = mysqli_fetch_assoc($eva_fb);
-		if ($cat6_quest > 0) {
-			$feedback = $feedback . "\n" . $t . ') ' . $evafb['feedback'];
-			$t++;
-		}
-
-		$cat7_quest = (($cat7 / ($cat7_questions * 3)) * 100);
-		$eva_fb = mysqli_query($conn, "SELECT * FROM `kiusc_eval_feedback` where cat_id=7 and min < '$cat7_quest' and max >= '$cat7_quest'");
-		$evafb = mysqli_fetch_assoc($eva_fb);
-		if ($cat7_quest > 0) {
-			$feedback = $feedback . "\n" . $t . ') ' . $evafb['feedback'];
-			$t++;
-		}
-
-		$cat8_quest = (($cat8 / ($cat8_questions * 3)) * 100);
-		$eva_fb = mysqli_query($conn, "SELECT * FROM `kiusc_eval_feedback` where cat_id=8 and min < '$cat8_quest' and max >= '$cat8_quest'");
-		$evafb = mysqli_fetch_assoc($eva_fb);
-		if ($cat8_quest > 0) {
-			$feedback = $feedback . "\n" . $t . ') ' . $evafb['feedback'];
-			$t++;
-		}
-
-		$cat9_quest = (($cat9 / ($cat9_questions * 3)) * 100);
-		$eva_fb = mysqli_query($conn, "SELECT * FROM `kiusc_eval_feedback` where cat_id=9 and min < '$cat9_quest' and max >= '$cat9_quest'");
-		$evafb = mysqli_fetch_assoc($eva_fb);
-		if ($cat9_quest > 0) {
-			$feedback = $feedback . "\n" . $t . ') ' . $evafb['feedback'];
-			$t++;
-		}
-
-
-
-		$row++;
-
-		$std_part_comment = '';
-		if ($std_participant_lvl <= 20) {
-			$std_part_comment = 'Malfunctioning & motivation less   (MML)';
-		} elseif ($std_participant_lvl > 20 && $std_participant_lvl < 60) {
-			$std_part_comment = 'Needs improvement   (NIP)';
-		} elseif ($std_participant_lvl >= 60 && $std_participant_lvl < 80) {
-			$std_part_comment = 'Good   (G)';
-		} elseif ($std_participant_lvl >= 80 && $std_participant_lvl < 90) {
-			$std_part_comment = 'Very good   (VG)';
-		} elseif ($std_participant_lvl >= 90 && $std_participant_lvl < 95) {
-			$std_part_comment = 'Excellent   (EXL)';
-		} elseif ($std_participant_lvl >= 95) {
-			$std_part_comment = 'Outstanding   (OST)';
-		}
-
-		// $g_per = 0;
-		// if($g_total > 0)
-		// 		$g_per = round($g_obt / $g_total * 100,2);
-
-		$comment = '';
-		if ($comp_tech_prof < 40) {
-			$comment = 'Fail   (F)';
-		} elseif ($comp_tech_prof >= 40 && $comp_tech_prof < 50) {
-			$comment = 'Needs improvement   (NIP)';
-		} elseif ($comp_tech_prof >= 50 && $comp_tech_prof < 60) {
-			$comment = 'Satisfactory   (SF)';
-		} elseif ($comp_tech_prof >= 60 && $comp_tech_prof < 70) {
-			$comment = 'Good   (G)';
-		} elseif ($comp_tech_prof >= 70 && $comp_tech_prof < 80) {
-			$comment = 'Very good   (VG)';
-		} elseif ($comp_tech_prof >= 80 && $comp_tech_prof < 90) {
-			$comment = 'Excellent   (EXL)';
-		} elseif ($comp_tech_prof >= 90 && $comp_tech_prof < 95) {
-			$comment = 'Outstanding   (OST)';
-		} elseif ($comp_tech_prof >= 95) {
-			$comment = 'Exceptional   (EXP)';
-		}
-
-		$objPHPExcel->getActiveSheet()->setcellValue('A' . $row, 'Comprehensive Teaching Proficiency');
-		$objPHPExcel->getActiveSheet()->mergeCells('A' . $row . ':' . 'C' . $row);
-		$objPHPExcel->getActiveSheet()->getStyle('A' . $row)->getFont()->setBold(true);
-		$objPHPExcel->getActiveSheet()->setcellValue('D' . $row, $comp_tech_prof . ' (' . $comment . ')');
-		$objPHPExcel->getActiveSheet()->getStyle('D' . $row)->getFont()->setBold(true);
-		$objPHPExcel->getActiveSheet()->mergeCells('D' . $row . ':' . 'J' . $row);
-
-		$row++;
-		$objPHPExcel->getActiveSheet()->setcellValue('A' . $row, 'Students’ Participation Level');
-		$objPHPExcel->getActiveSheet()->getStyle('A' . $row)->getFont()->setBold(true);
-		$objPHPExcel->getActiveSheet()->mergeCells('A' . $row . ':' . 'C' . $row);
-		$objPHPExcel->getActiveSheet()->setcellValue('D' . $row, $std_participant_lvl . ' (' . $std_part_comment . ')');
-		$objPHPExcel->getActiveSheet()->getStyle('D' . $row)->getFont()->setBold(true);
-		$objPHPExcel->getActiveSheet()->mergeCells('D' . $row . ':' . 'J' . $row);
-
-		// $i=0;
-		// $row++;
-		// for($i=$row; $i<16; $i++)
-		// {
-		// 	$objPHPExcel->getActiveSheet()->mergeCells('A'.$row .':'. 'J'.$row);
-		// 	$row++;
-		// }
-
-		$row = 18;
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow('A', $row, 'Self-Generated Teaching Performance Feedback on SIS (based on Interrogative Proforma)');
-		$row++;
-		$objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow('A', $row, $feedback);
-		//$objPHPExcel->getActiveSheet()->mergeCells('A'.$row .':'. 'F'.$row);
-		$row++;
-		// echo $feedback;
-		// return;
-
-
-		////////  end refrence
-		///////////////  Style ///////////
-
-		$fromCell = PHPExcel_Cell::stringFromColumnIndex(0) . 11;
-		$toCell = PHPExcel_Cell::stringFromColumnIndex(16) . ($row);
-
-		$cellRange = $fromCell . ':' . $toCell;
-
-
-		$objPHPExcel->getActiveSheet()->getStyle($cellRange)->getFont()->applyFromArray(
-			array(
-				'name' => 'Arial',
-				'size' => 10
-			)
-		);
-
-		$objPHPExcel->getActiveSheet()->getStyle("B11:B" . $row)->getAlignment()->applyFromArray(
-			array(
-				'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_LEFT
-			)
-		);
-
-
-		//////////  End style //////////
-
-
-		$objPHPExcel->setActiveSheetIndex(0);
-	}
+while ($fac = mysqli_fetch_assoc($faculty)) {
+    $eval_count_fac = mysqli_query($conn, "SELECT es.* FROM `kiusc_eval_std` es
+        LEFT JOIN kiusc_course_offered co ON co.id = es.c_offer_id
+        WHERE es.eval_id = '$evl_id' AND es.eval_type_id = 1 AND co.fac_id = '" . $fac['user_id'] . "'");
+    $evl_count_fac = mysqli_num_rows($eval_count_fac);
+    if ($evl_count_fac == 0) continue;
+
+    $courses = mysqli_query($conn, "SELECT cf.* FROM `kiusc_course_offered` cf
+        JOIN kiusc_evaluation e ON cf.sem_id = e.sem_id
+        WHERE cf.fac_id = '" . $fac['user_id'] . "' AND e.id = '$evl_id' AND cf.eva_cat_id != 5");
+    $offer = mysqli_num_rows($courses);
+    if ($offer > 0) {
+        $i++;
+        $sheet1 = $objPHPExcel->getActiveSheet()->copy();
+        $sheet2 = clone $sheet1;
+
+        $fac_name = $fac['first_name'] . ' ' . $fac['last_name'];
+        if (strlen($fac_name) > 31) {
+            $fac_name = substr($fac_name, 0, 28) . '...';
+        }
+
+        $sheet2->setTitle($fac_name);
+        $objPHPExcel->addSheet($sheet2);
+        unset($sheet2);
+        unset($sheet1);
+
+        $objPHPExcel->setActiveSheetIndex($i);
+        $objPHPExcel->getActiveSheet()->setCellValue('C2', $fac['first_name'] . ' ' . $fac['last_name']);
+        $objPHPExcel->getActiveSheet()->setCellValue('A4', "The Quality Enhancement Cell, University of Baltistan, Skardu hereby acknowledges your services at University of Baltistan, Skardu. Your Evaluation report of the Semester ($semester) has been prepared under the students' Evaluation Data collected by this office. The following observations and recommendations are forwarded for kind perusal:");
+
+        $category_headers = mysqli_query($conn, "SELECT * FROM `kiusc_eval_ques_category` WHERE eval_type_id=1 AND active=1");
+        $category_scores = [];
+        $category_questions = [];
+
+        $headerRow = 7;
+        $col = 3;
+        while ($header = mysqli_fetch_assoc($category_headers)) {
+            $short_name = $header['shortnmae'];
+            $category_scores[$short_name] = 0;
+            $category_questions[$short_name] = 0;
+            $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col++, $headerRow, $short_name);
+        }
+
+        // Add "Total Score" column before "Participation Level" column
+        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col, $headerRow, "T.Score");
+
+        // Add "Total Students" and "Total Students Participated" columns
+        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col + 1, $headerRow, "TS");
+
+        // Add "Participation Level" column
+        $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col + 2, $headerRow, "SPT");
+
+        $row = 8;
+        $sno = 1;
+        $total_courses = 0;
+        $total_participated_std_percentage = 0;
+        $total_overall_percentage = 0;
+        $valid_course_count = 0;
+        $total_students = 0;
+        $total_students_participated = 0;
+
+        $english_total_percentage = 0;
+        $english_course_count = 0;
+
+        while ($co = mysqli_fetch_assoc($courses)) {
+            $course_name = mysqli_fetch_assoc(mysqli_query($conn, "SELECT name FROM `kiusc_courses` c
+                JOIN kiusc_course_offered cf ON c.id = cf.course_id WHERE cf.id = '" . $co['id'] . "' AND cf.eva_cat_id != 5"));
+            $program_name = mysqli_fetch_assoc(mysqli_query($conn, "SELECT name, session_name, `group` FROM `kiusc_programs` WHERE id = '" . $co['prog_id'] . "'"));
+
+            $col = 0;
+            $total_category_percentage = 0;
+
+            foreach ($category_scores as $cat => $score) {
+                $category_scores[$cat] = 0;
+                $category_questions[$cat] = 0;
+            }
+
+            $answers = mysqli_query($conn, "SELECT * FROM `kiusc_eval_std` es
+                JOIN `kiusc_eval_questions` eq ON es.question_id = eq.id
+                JOIN `kiusc_eval_ques_category` eqc ON eqc.id = eq.cat_id
+                WHERE eqc.eval_type_id = 1 AND c_offer_id = '" . $co['id'] . "'");
+
+            while ($ans = mysqli_fetch_assoc($answers)) {
+                $cat_name = $ans['shortnmae'];
+                $category_scores[$cat_name] += $ans['ans'];
+                $category_questions[$cat_name]++;
+            }
+
+            foreach ($category_scores as $cat => $score) {
+                if ($category_questions[$cat] == 0) $category_questions[$cat] = 1;
+                $percentage = round(($score / ($category_questions[$cat] * 3)) * 100, 2);
+                $total_category_percentage += $percentage;
+
+                if ($cat == 'EMI') {
+                    $english_total_percentage += $percentage;
+                    $english_course_count++;
+                }
+            }
+
+            if ($total_category_percentage == 0) continue;
+
+            $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col++, $row, $sno);
+            $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col++, $row, $course_name['name']);
+            $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col++, $row, $program_name['name'] . ' (' . $program_name['session_name'] . ')' . $program_name['group']);
+
+            foreach ($category_scores as $cat => $score) {
+                $percentage = round(($score / ($category_questions[$cat] * 3)) * 100, 2);
+                $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col++, $row, "$percentage");
+            }
+
+            $overall_percentage = round($total_category_percentage / count($category_scores), 2);
+            $ttl_reg_std = mysqli_num_rows(mysqli_query($conn, "SELECT * FROM `kiusc_results` WHERE c_offer_id = '" . $co['id'] . "'"));
+            $ttl_eval_std = mysqli_num_rows(mysqli_query($conn, "SELECT DISTINCT es.std_id FROM `kiusc_eval_std` es WHERE c_offer_id = '" . $co['id'] . "'"));
+            
+            $std_participant_lvl = round(($ttl_eval_std / $ttl_reg_std) * 100, 2);
+
+            $total_students += $ttl_reg_std;
+            $total_students_participated += $ttl_eval_std;
+            $total_participated_std_percentage += $std_participant_lvl;
+            $total_overall_percentage += $overall_percentage;
+            $valid_course_count++;
+
+            $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col, $row, "$overall_percentage");
+            $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col + 1, $row, "$ttl_reg_std");
+            $objPHPExcel->getActiveSheet()->setCellValueByColumnAndRow($col + 2, $row, "$std_participant_lvl");
+
+            $row++;
+            $sno++;
+        }
+
+        $overall_course_percentage = round($total_overall_percentage / $valid_course_count, 2);
+        $english_avg_percentage = $english_course_count > 0 ? round($english_total_percentage / $english_course_count, 2) : 0;
+        $total_participation_level = round($total_participated_std_percentage / $valid_course_count, 2);
+
+        $comment = '';
+        if ($overall_course_percentage < 50) {
+            $comment = 'Needs improvement   (NIP)';
+        } elseif ($overall_course_percentage >= 50 && $overall_course_percentage < 60) {
+            $comment = 'Satisfactory   (SF)';
+        } elseif ($overall_course_percentage >= 60 && $overall_course_percentage < 70) {
+            $comment = 'Good   (G)';
+        } elseif ($overall_course_percentage >= 70 && $overall_course_percentage < 80) {
+            $comment = 'Very good   (VG)';
+        } elseif ($overall_course_percentage >= 80 && $overall_course_percentage < 85) {
+            $comment = 'Excellent   (EXL)';
+        } elseif ($overall_course_percentage >= 85) {
+            $comment = 'Exceptional   (EXP)';
+        }
+
+        $objPHPExcel->getActiveSheet()->setcellValue('A20', 'Comprehensive Teaching Proficiency');
+        $objPHPExcel->getActiveSheet()->setcellValue('D20', $overall_course_percentage. ' %' . ' (' . $comment . ')');
+
+        $objPHPExcel->getActiveSheet()->setcellValue('A21', 'English as Medium of Instruction');
+        $objPHPExcel->getActiveSheet()->setcellValue('D21', $english_avg_percentage . ' %');
+
+        $objPHPExcel->getActiveSheet()->setcellValue('A22', 'Student Participation Level (SPT)');
+        $objPHPExcel->getActiveSheet()->setcellValue('D22', $total_participation_level . ' %');
+
+        $objPHPExcel->setActiveSheetIndex(0);
+    }
 }
-unset($sheet1);
-$objPHPExcel->removeSheetByIndex(0);
 
+header("Content-Disposition: attachment; filename=$name_for_download.xlsx");
 $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-$objWriter->save(str_replace('.php', '.xlsx', __FILE__));
-
-header('Location: downloadFile.php?s=' . $name_for_download);
+ob_end_clean();
+$objWriter->save('php://output');
 ?>

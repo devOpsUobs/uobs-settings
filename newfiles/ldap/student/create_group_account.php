@@ -37,7 +37,7 @@ else
 
 if(isset($_POST['create']))
 {
-	$password = '2512345';
+	$password = '2612345';
 	$sno = 0;
 	$students = mysqli_query($conn, "SELECT * FROM `kiusc_students` WHERE `prog_id` = '$program'");
 	while($std = mysqli_fetch_assoc($students))

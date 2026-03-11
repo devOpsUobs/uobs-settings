@@ -124,6 +124,8 @@ while ($fac = mysqli_fetch_assoc($faculty)) {
                 $percentage = round(($score / ($category_questions[$cat] * 3)) * 100, 2);
                 $total_category_percentage += $percentage;
 
+        
+
                 if ($cat == 'EMI') {
                     $english_total_percentage += $percentage;
                     $english_course_count++;
@@ -181,7 +183,7 @@ while ($fac = mysqli_fetch_assoc($faculty)) {
         }
 
         $objPHPExcel->getActiveSheet()->setcellValue('A20', 'Comprehensive Teaching Proficiency');
-        $objPHPExcel->getActiveSheet()->setcellValue('D20', $overall_course_percentage. ' %' . ' (' . $comment . ')');
+        $objPHPExcel->getActiveSheet()->setcellValue('D20', $overall_course_percentage . ' (' . $comment . ')');
 
         $objPHPExcel->getActiveSheet()->setcellValue('A21', 'English as Medium of Instruction');
         $objPHPExcel->getActiveSheet()->setcellValue('D21', $english_avg_percentage . ' %');

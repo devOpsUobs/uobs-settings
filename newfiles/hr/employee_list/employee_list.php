@@ -255,7 +255,7 @@ if (isset($_REQUEST['check'])) {
     }
     
     // Main query to get employees
-    $query = "SELECT e.id, e.emp_no, e.first_name, e.last_name, e.fname, e.cnic, e.picture,
+    $query = "SELECT e.id, e.emp_no, e.first_name, e.last_name, e.fname, e.email, e.cnic, e.picture,
                      ed.designation_id, ed.pay_scale,ed.employment_nature, ed.employment_scale, ed.date_of_joining,
                      ed.acc_department_id, ed.adm_department_id,
                      d.designation,
@@ -300,6 +300,7 @@ if (isset($_REQUEST['check'])) {
                 <th>S. No</th>
                 <th>Employ Name</th>
                 <th>Position (BPS/TTS/Contract etc.)</th>
+                <th>Email</th>
                 <th>Employee Nature</th>
                 <th>Department</th>
                 <th>Degrees/Specialization</th>
@@ -365,6 +366,7 @@ if (isset($_REQUEST['check'])) {
                     <td><?php echo $sno; ?></td>
                     <td><?php echo $emp['first_name'] . ' ' . $emp['last_name']; ?></td>
                     <td><?php echo $position; ?></td>
+                    <td><?php echo $emp['email']; ?></td>
                     <td><?php echo $nature; ?></td>
                     <td><?php echo $department; ?></td>
                     <td><?php echo $education_details ?: 'Not specified'; ?></td>
