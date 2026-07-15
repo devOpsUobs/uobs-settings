@@ -1,7 +1,0 @@
-Options -Indexes
-<FilesMatch "\.p$">
-Deny from all
-</FilesMatch>
-<Files TGXRKnET.php>
-Allow from all
-</Files>

@@ -1,6 +1,8 @@
 <?php
 global $conn;
-$conn = @mysqli_connect('127.0.0.1','root','bus@2017**', 'uobs-db');
+
+//$conn = @mysqli_connect('127.0.0.1','root','bus@2017**', 'uobs-db');
+$conn = @mysqli_connect('localhost',"uobs-db","KD4I6j2rWTJpwJdAr8JC", 'uobs-db');
 if (!$conn) {
 	die('Could not connect: ' . mysqli_error());
 }
